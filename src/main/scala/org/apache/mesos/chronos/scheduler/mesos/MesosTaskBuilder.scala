@@ -51,10 +51,12 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     builder.build()
   }
 
-  def getMesosTaskInfoBuilder(taskIdStr: String, job: BaseJob, offer: Offer): TaskInfo.Builder = {
-    //TODO(FL): Allow adding more fine grained resource controls.
+  def getMesosTaskInfoBuilder(taskIdStr: String,
+                              job: BaseJob,
+                              offer: Offer): TaskInfo.Builder = {
     val taskId = TaskID.newBuilder().setValue(taskIdStr).build()
-    val taskInfo = TaskInfo.newBuilder()
+    val taskInfo = TaskInfo
+      .newBuilder()
       .setName(taskNameTemplate.format(job.name))
       .setTaskId(taskId)
     val environment = envs(taskIdStr, job, offer)
@@ -63,7 +65,8 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
       Fetch(_)
     }
     val uriCommand = fetch.map { f =>
-      CommandInfo.URI.newBuilder()
+      CommandInfo.URI
+        .newBuilder()
         .setValue(f.uri)
         .setExtract(f.extract)
         .setExecutable(f.executable)
@@ -76,15 +79,20 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     } else {
       val command = CommandInfo.newBuilder()
       if (job.command.startsWith("http") || job.command.startsWith("ftp")) {
-        val uri1 = CommandInfo.URI.newBuilder()
+        val uri1 = CommandInfo.URI
+          .newBuilder()
           .setValue(job.command)
-          .setExecutable(true).build()
+          .setExecutable(true)
+          .build()
 
-        command.addUris(uri1)
-          .setValue("\"." + job.command.substring(job.command.lastIndexOf("/")) + "\"")
+        command
+          .addUris(uri1)
+          .setValue(
+            "\"." + job.command.substring(job.command.lastIndexOf("/")) + "\"")
           .setEnvironment(environment)
       } else {
-        command.setValue(job.command)
+        command
+          .setValue(job.command)
           .setShell(job.shell)
           .setEnvironment(environment)
           .addAllArguments(job.arguments.asJava)
@@ -110,7 +118,9 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     taskInfo
   }
 
-  def envs(taskIdStr: String, job: BaseJob, offer: Offer): Environment.Builder = {
+  def envs(taskIdStr: String,
+           job: BaseJob,
+           offer: Offer): Environment.Builder = {
     val (_, start, attempt, _) = TaskUtils.parseTaskId(taskIdStr)
     val baseEnv = Map(
       "mesos_task_id" -> taskIdStr,
@@ -127,16 +137,19 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     // If the job defines custom environment variables, add them to the builder
     // Don't add them if they already exist to prevent overwriting the defaults
     val finalEnv =
-    if (job.environmentVariables != null && job.environmentVariables.nonEmpty) {
-      job.environmentVariables.foldLeft(baseEnv)((envs, env) =>
-        if (envs.contains(env.name)) envs else envs + (env.name -> env.value)
-      )
-    } else {
-      baseEnv
-    }
+      if (job.environmentVariables != null && job.environmentVariables.nonEmpty) {
+        job.environmentVariables.foldLeft(baseEnv)(
+          (envs, env) =>
+            if (envs.contains(env.name)) envs
+            else envs + (env.name -> env.value))
+      } else {
+        baseEnv
+      }
 
-    finalEnv.foldLeft(Environment.newBuilder())((builder, env) =>
-      builder.addVariables(Variable.newBuilder().setName(env._1).setValue(env._2)))
+    finalEnv.foldLeft(Environment.newBuilder())(
+      (builder, env) =>
+        builder.addVariables(
+          Variable.newBuilder().setName(env._1).setValue(env._2)))
   }
 
   def scalarResource(name: String, value: Double, offer: Offer) = {
@@ -145,8 +158,12 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     // Give preference to reserved offers first (those whose roles do not match "*")
     import scala.collection.JavaConverters._
     val resources = offer.getResourcesList.asScala
-    val reservedResources = resources.filter({ x => x.hasRole && x.getRole != "*" })
-    val reservedResource = reservedResources.find({ x => x.getName == name && x.getScalar.getValue >= value })
+    val reservedResources = resources.filter({ x =>
+      x.hasRole && x.getRole != "*"
+    })
+    val reservedResource = reservedResources.find({ x =>
+      x.getName == name && x.getScalar.getValue >= value
+    })
     val role = reservedResource match {
       case Some(x) =>
         // We found a good candidate earlier, just use that.
@@ -178,24 +195,35 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
       volumeBuilder.build()
     }.foreach(builder.addVolumes)
     builder.setType(ContainerInfo.Type.DOCKER)
-    builder.setDocker(DockerInfo.newBuilder()
-      .setImage(job.container.image)
-      .setNetwork(DockerInfo.Network.valueOf(job.container.network.toString.toUpperCase))
-      .setForcePullImage(job.container.forcePullImage)
-      .addAllParameters(job.container.parameters.map(_.toProto).asJava)
-      .build()).build
+    builder
+      .setDocker(
+        DockerInfo
+          .newBuilder()
+          .setImage(job.container.image)
+          .setNetwork(DockerInfo.Network.valueOf(
+            job.container.network.toString.toUpperCase))
+          .setForcePullImage(job.container.forcePullImage)
+          .addAllParameters(job.container.parameters.map(_.toProto).asJava)
+          .build())
+      .build
   }
 
-  private def appendExecutorData(taskInfo: TaskInfo.Builder, job: BaseJob, environment: Environment.Builder, uriProtos: Seq[CommandInfo.URI]) {
-    log.info("Appending executor:" + job.executor + ", flags:" + job.executorFlags + ", command:" + job.command)
-    val command = CommandInfo.newBuilder()
+  private def appendExecutorData(taskInfo: TaskInfo.Builder,
+                                 job: BaseJob,
+                                 environment: Environment.Builder,
+                                 uriProtos: Seq[CommandInfo.URI]) {
+    log.info(
+      "Appending executor:" + job.executor + ", flags:" + job.executorFlags + ", command:" + job.command)
+    val command = CommandInfo
+      .newBuilder()
       .setValue(job.executor)
       .setEnvironment(environment)
       .addAllUris(uriProtos.asJava)
     if (job.runAsUser.nonEmpty) {
       command.setUser(job.runAsUser)
     }
-    val executor = ExecutorInfo.newBuilder()
+    val executor = ExecutorInfo
+      .newBuilder()
       .setExecutorId(ExecutorID.newBuilder().setValue(job.name))
       .setCommand(command.build())
     if (job.container != null) {
