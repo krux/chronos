@@ -33,7 +33,7 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
       var taskId = "ct:1420843781398:0:test:" + arguments
       val jobArguments = TaskUtils.getJobArgumentsForTaskId(taskId)
 
-      jobArguments must_== arguments
+      jobArguments must_== TaskUtils.md5Hash(arguments)
     }
 
     "Disable command injection" in {
@@ -52,6 +52,8 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
     "Parse taskId" in {
       val arguments = "-a 1 -b 2"
       val arguments2 = "-a 1:2 --B test"
+      val argumentsHash = TaskUtils.md5Hash(arguments)
+      val arguments2Hash = TaskUtils.md5Hash(arguments2)
 
       val taskIdOne = "ct:1420843781398:0:test:" + arguments
       val (jobName, jobDue, attempt, jobArguments) = TaskUtils.parseTaskId(taskIdOne)
@@ -59,12 +61,12 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
       jobName must_== "test"
       jobDue must_== 1420843781398L
       attempt must_== 0
-      jobArguments must_== arguments
+      jobArguments must_== argumentsHash
 
       val taskIdTwo = "ct:1420843781398:0:test:" + arguments2
       val (_, _, _, jobArguments2) = TaskUtils.parseTaskId(taskIdTwo)
 
-      jobArguments2 must_== arguments2
+      jobArguments2 must_== arguments2Hash
 
       val taskIdThree = "ct:1420843781398:0:test"
       val (jobName3, _, _, jobArguments3) = TaskUtils.parseTaskId(taskIdThree)
@@ -74,4 +76,3 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
     }
   }
 }
-

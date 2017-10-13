@@ -1,11 +1,13 @@
 package org.apache.mesos.chronos.scheduler.jobs
 
 import java.util.logging.Logger
+import java.security.MessageDigest
 
 import org.apache.mesos.Protos.{TaskID, TaskState, TaskStatus}
 import org.joda.time.DateTime
 
 import scala.util.matching.Regex
+
 
 /**
   * This file contains a number of classes and objects for dealing with tasks. Tasks are the actual units of work that
@@ -77,7 +79,7 @@ object TaskUtils {
     require(taskId != null, "taskId cannot be null")
     try {
       val TaskUtils.taskIdPattern(_, _, _, jobArguments) = taskId
-      jobArguments
+      md5Hash(jobArguments)
     } catch {
       case t: Exception =>
         log.warning("Unable to parse idStr: '%s' due to a corrupted string or version error. " +
@@ -87,7 +89,16 @@ object TaskUtils {
   }
 
   def parseTaskId(id: String): (String, Long, Int, String) = {
-    val taskIdPattern(due, attempt, jobName, "erin" ) = id
-    (jobName, due.toLong, attempt.toInt, "erin" )
+    val taskIdPattern(due, attempt, jobName, jobArguments ) = id
+    val jobArgumentsHash = md5Hash(jobArguments)
+    (jobName, due.toLong, attempt.toInt, jobArgumentsHash )
+  }
+
+  def md5Hash(stringToHash: String) = {
+    if (stringToHash != "") {
+      MessageDigest.getInstance("MD5").digest(stringToHash.getBytes).map("%02x".format(_)).mkString
+    } else {
+        stringToHash
+    }
   }
 }
