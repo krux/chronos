@@ -87,7 +87,7 @@ object TaskUtils {
   }
 
   def parseTaskId(id: String): (String, Long, Int, String) = {
-    val taskIdPattern(due, attempt, jobName, jobArguments) = id
-    (jobName, due.toLong, attempt.toInt, jobArguments)
+    val taskIdPattern(due, attempt, jobName, "erin" ) = id
+    (jobName, due.toLong, attempt.toInt, "erin" )
   }
 }

@@ -1,23 +1,24 @@
 #!/bin/sh
 set -e
 
-branch=`git rev-parse --abbrev-ref HEAD`
-if [ "$branch" = "master" ]; then
-  set +e # ignore error of following command
-  tag=`git describe --exact-match --tags HEAD`
-  exit_code=$?
-  set -e
-  if [ $exit_code = 0 ]; then
-    image_tag=`git describe --tags`
-  else
-    image_tag="latest"
-  fi
-else
-  image_tag=$branch
-fi
-#version=`git describe --tags`
+# branch=`git rev-parse --abbrev-ref HEAD`
+# if [ "$branch" = "master" ]; then
+#   set +e # ignore error of following command
+#   tag=`git describe --exact-match --tags HEAD`
+#   exit_code=$?
+#   set -e
+#   if [ $exit_code = 0 ]; then
+#     image_tag=`git describe --tags`
+#   else
+#     image_tag="latest"
+#   fi
+# else
+#   image_tag=$branch
+# fi
+#version=v3.0.4
 
-version=$( grep -Po '<version>\K[^<]*' ./pom.xml | head -1 | sed -e 's/-.*//' )
+tag=v3.0.4
+version=3.0.4
 
 echo "Branch: $branch"
 echo "Tag: $tag"
