@@ -70,25 +70,6 @@ object TaskUtils {
     }
   }
 
-  /**
-    * Parses the task id into job arguments
-    *
-    * @param taskId
-    * @return
-    */
-  def getJobArgumentsForTaskId(taskId: String): String = {
-    require(taskId != null, "taskId cannot be null")
-    try {
-      val TaskUtils.taskIdPattern(_, _, _, jobArguments) = taskId
-      jobArguments
-    } catch {
-      case t: Exception =>
-        log.warning("Unable to parse idStr: '%s' due to a corrupted string or version error. " +
-          "Warning, dependents will not be triggered!")
-        ""
-    }
-  }
-
   def parseTaskId(id: String): (String, Long, Int, String) = {
     val taskIdPattern(due, attempt, jobName, jobArguments) = id
     (jobName, due.toLong, attempt.toInt, jobArguments)

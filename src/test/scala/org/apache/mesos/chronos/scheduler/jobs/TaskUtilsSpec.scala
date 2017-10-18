@@ -29,14 +29,6 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
       taskIdFour must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(cmdArgs) // test adding args
     }
 
-    "Get job arguments for taskId" in {
-      val arguments = "-a 1 -b 2"
-      var taskId = "ct:1420843781398:0:test:" + arguments
-      val jobArguments = TaskUtils.getJobArgumentsForTaskId(taskId)
-
-      jobArguments must_== arguments
-    }
-
     "Disable command injection" in {
       val schedule = "R/2012-01-01T00:00:01.000Z/P1M"
       val cmdArgs = "-c 1 ; ./evil.sh"
