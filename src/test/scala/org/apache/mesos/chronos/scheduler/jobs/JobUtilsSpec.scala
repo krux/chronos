@@ -39,6 +39,7 @@ class JobUtilsSpec extends SpecificationWithJUnit with Mockito {
     scheduledTime.toLocalDate must_== now.toLocalDate
   }
 
+  // TODO: this test is broken; turning it off
   // "Can skip forward a job with a monthly period" in {
   //   val schedule = "R/2012-01-01T00:00:01.000Z/P1M"
   //   val job = ScheduleBasedJob(schedule, "sample-name", "sample-command")

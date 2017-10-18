@@ -33,6 +33,8 @@ object TaskUtils {
 
   def getTaskId(job: BaseJob, due: DateTime, attempt: Int = 0, arguments: Option[String] = None): String = {
     val args: String = arguments.getOrElse(job.arguments.mkString(" ")).filterNot(commandInjectionFilter)
+    // we need to hash the arguments here because they are being used as part of the
+    // mesos task ID. The ID can't take special characters and thus fails
     taskIdTemplate.format(due.getMillis, attempt, job.name, md5Hash(args))
   }
 
@@ -92,6 +94,7 @@ object TaskUtils {
     (jobName, due.toLong, attempt.toInt, jobArguments)
   }
 
+  // Turn a string into a md5 hash
   def md5Hash(stringToHash: String) = {
     if (stringToHash != "") {
       MessageDigest.getInstance("MD5").digest(stringToHash.getBytes).map("%02x".format(_)).mkString
