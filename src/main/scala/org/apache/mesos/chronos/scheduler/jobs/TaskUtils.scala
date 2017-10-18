@@ -76,11 +76,8 @@ object TaskUtils {
   }
 
   // Turn a string into a md5 hash
-  def md5Hash(stringToHash: String) = {
-    if (stringToHash != "") {
-      MessageDigest.getInstance("MD5").digest(stringToHash.getBytes).map("%02x".format(_)).mkString
-    } else {
-        stringToHash
-    }
+  def md5Hash(stringToHash: String) = stringToHash match {
+    case "" => stringToHash
+    case _  => MessageDigest.getInstance("MD5").digest(stringToHash.getBytes).map("%02x".format(_)).mkString
   }
 }
