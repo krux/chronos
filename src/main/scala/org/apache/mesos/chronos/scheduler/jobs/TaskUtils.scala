@@ -1,6 +1,7 @@
 package org.apache.mesos.chronos.scheduler.jobs
 
 import java.util.logging.Logger
+import java.security.MessageDigest
 
 import org.apache.mesos.Protos.{TaskID, TaskState, TaskStatus}
 import org.joda.time.DateTime
@@ -32,7 +33,7 @@ object TaskUtils {
 
   def getTaskId(job: BaseJob, due: DateTime, attempt: Int = 0, arguments: Option[String] = None): String = {
     val args: String = arguments.getOrElse(job.arguments.mkString(" ")).filterNot(commandInjectionFilter)
-    taskIdTemplate.format(due.getMillis, attempt, job.name, args)
+    taskIdTemplate.format(due.getMillis, attempt, job.name, md5Hash(args))
   }
 
   def isValidVersion(taskIdString: String): Boolean = {
@@ -89,5 +90,13 @@ object TaskUtils {
   def parseTaskId(id: String): (String, Long, Int, String) = {
     val taskIdPattern(due, attempt, jobName, jobArguments) = id
     (jobName, due.toLong, attempt.toInt, jobArguments)
+  }
+
+  def md5Hash(stringToHash: String) = {
+    if (stringToHash != "") {
+      MessageDigest.getInstance("MD5").digest(stringToHash.getBytes).map("%02x".format(_)).mkString
+    } else {
+        stringToHash
+    }
   }
 }

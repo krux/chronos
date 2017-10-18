@@ -22,10 +22,10 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
       val taskIdThree = TaskUtils.getTaskId(job3, due, 0, Option(cmdArgs))
       val taskIdFour = TaskUtils.getTaskId(job2, due, 0, Option(cmdArgs))
 
-      taskIdOne must_== "ct:1420843781398:0:sample-name:" + arguments
+      taskIdOne must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(arguments)
       taskIdTwo must_== "ct:1420843781398:0:sample-name:"
-      taskIdThree must_== "ct:1420843781398:0:sample-name:" + cmdArgs // test override
-      taskIdFour must_== "ct:1420843781398:0:sample-name:" + cmdArgs // test adding args
+      taskIdThree must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(cmdArgs) // test override
+      taskIdFour must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(cmdArgs) // test adding args
     }
 
     "Get job arguments for taskId" in {
@@ -46,7 +46,7 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
 
       val taskIdOne = TaskUtils.getTaskId(job1, due, 0, Option(cmdArgs))
 
-      taskIdOne must_== "ct:1420843781398:0:sample-name:" + expectedArgs
+      taskIdOne must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(expectedArgs)
     }
 
     "Parse taskId" in {
@@ -74,4 +74,3 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
     }
   }
 }
-

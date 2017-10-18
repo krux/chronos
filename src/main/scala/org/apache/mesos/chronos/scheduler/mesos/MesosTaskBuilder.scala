@@ -81,7 +81,9 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     if (job.executor.nonEmpty) {
       appendExecutorData(taskInfo, job, environment, uriCommand)
     } else {
-      val jobArguments = TaskUtils.getJobArgumentsForTaskId(taskId.getValue)
+      // we already have a string sequence with the arguments, turn that into a single
+      // string and pass that to JobUtils
+      val jobArguments = job.arguments.mkString (" ")
       val jobWithCommand = if (jobArguments != null && !jobArguments.isEmpty) {
         JobUtils.getJobWithArguments(job, jobArguments)
       } else {
