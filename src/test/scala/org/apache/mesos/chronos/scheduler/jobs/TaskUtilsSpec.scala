@@ -23,10 +23,10 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
       val taskIdFour = TaskUtils.getTaskId(job2, due, 0, Option(cmdArgs))
 
       // we are hashing the arguments in real life, so we need to hash them here too
-      taskIdOne must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(arguments)
+      taskIdOne must_== "ct:1420843781398:0:sample-name:" + TaskUtils.murmurHash(arguments)
       taskIdTwo must_== "ct:1420843781398:0:sample-name:"
-      taskIdThree must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(cmdArgs) // test override
-      taskIdFour must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(cmdArgs) // test adding args
+      taskIdThree must_== "ct:1420843781398:0:sample-name:" + TaskUtils.murmurHash(cmdArgs) // test override
+      taskIdFour must_== "ct:1420843781398:0:sample-name:" + TaskUtils.murmurHash(cmdArgs) // test adding args
     }
 
     "Disable command injection" in {
@@ -40,7 +40,7 @@ class TaskUtilsSpec extends SpecificationWithJUnit with Mockito {
       val taskIdOne = TaskUtils.getTaskId(job1, due, 0, Option(cmdArgs))
 
       // we are hashing the arguments in real life, so we need to hash them here too
-      taskIdOne must_== "ct:1420843781398:0:sample-name:" + TaskUtils.md5Hash(expectedArgs)
+      taskIdOne must_== "ct:1420843781398:0:sample-name:" + TaskUtils.murmurHash(expectedArgs)
     }
 
     "Parse taskId" in {

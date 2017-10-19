@@ -83,7 +83,7 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     } else {
       // we already have a string sequence with the arguments, turn that into a single
       // string and pass that to JobUtils
-      val jobArguments = job.arguments.mkString (" ")
+      val jobArguments = job.arguments.mkString(" ")
       val jobWithCommand = if (jobArguments != null && !jobArguments.isEmpty) {
         JobUtils.getJobWithArguments(job, jobArguments)
       } else {

@@ -1,12 +1,12 @@
 package org.apache.mesos.chronos.scheduler.jobs
 
 import java.util.logging.Logger
-import java.security.MessageDigest
 
 import org.apache.mesos.Protos.{TaskID, TaskState, TaskStatus}
 import org.joda.time.DateTime
 
 import scala.util.matching.Regex
+import scala.util.hashing.MurmurHash3
 
 /**
   * This file contains a number of classes and objects for dealing with tasks. Tasks are the actual units of work that
@@ -35,7 +35,7 @@ object TaskUtils {
     val args: String = arguments.getOrElse(job.arguments.mkString(" ")).filterNot(commandInjectionFilter)
     // we need to hash the arguments here because they are being used as part of the
     // mesos task ID. The ID can't take special characters and thus fails
-    taskIdTemplate.format(due.getMillis, attempt, job.name, md5Hash(args))
+    taskIdTemplate.format(due.getMillis, attempt, job.name, murmurHash(args))
   }
 
   def isValidVersion(taskIdString: String): Boolean = {
@@ -75,9 +75,9 @@ object TaskUtils {
     (jobName, due.toLong, attempt.toInt, jobArguments)
   }
 
-  // Turn a string into a md5 hash
-  def md5Hash(stringToHash: String) = stringToHash match {
+  // Turn a string into a murmur3 hash; keep it a string
+  def murmurHash(stringToHash: String) = stringToHash match {
     case "" => stringToHash
-    case _  => MessageDigest.getInstance("MD5").digest(stringToHash.getBytes).map("%02x".format(_)).mkString
+    case _  => MurmurHash3.stringHash(stringToHash).toString
   }
 }

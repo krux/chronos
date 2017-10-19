@@ -161,7 +161,7 @@ class JobManagementResource @Inject()(val jobScheduler: JobScheduler,
       val job = jobGraph.getJobForName(jobName).get
       log.info("Manually triggering job:" + jobName)
       jobScheduler.taskManager.enqueue(TaskUtils.getTaskId(job, DateTime.now(DateTimeZone.UTC), 0, Option(arguments).filter(_.trim.nonEmpty))
-       , job.highPriority)
+        , job.highPriority)
       Response.noContent().build
     } catch {
       case ex: IllegalArgumentException =>
