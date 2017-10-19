@@ -76,6 +76,8 @@ object TaskUtils {
   }
 
   // Turn a string into a murmur3 hash; keep it a string
+  // murmur makes more sense here vs md5 since this code will be called often and
+  // we are just looking for a low collision rate and not security
   def murmurHash(stringToHash: String) = stringToHash match {
     case "" => stringToHash
     case _  => MurmurHash3.stringHash(stringToHash).toString
