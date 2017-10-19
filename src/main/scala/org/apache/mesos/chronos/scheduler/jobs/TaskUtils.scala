@@ -6,6 +6,7 @@ import org.apache.mesos.Protos.{TaskID, TaskState, TaskStatus}
 import org.joda.time.DateTime
 
 import scala.util.matching.Regex
+import scala.util.hashing.MurmurHash3
 
 /**
   * This file contains a number of classes and objects for dealing with tasks. Tasks are the actual units of work that
@@ -32,7 +33,9 @@ object TaskUtils {
 
   def getTaskId(job: BaseJob, due: DateTime, attempt: Int = 0, arguments: Option[String] = None): String = {
     val args: String = arguments.getOrElse(job.arguments.mkString(" ")).filterNot(commandInjectionFilter)
-    taskIdTemplate.format(due.getMillis, attempt, job.name, args)
+    // we need to hash the arguments here because they are being used as part of the
+    // mesos task ID. The ID can't take special characters and thus fails
+    taskIdTemplate.format(due.getMillis, attempt, job.name, murmurHash(args))
   }
 
   def isValidVersion(taskIdString: String): Boolean = {
@@ -67,27 +70,16 @@ object TaskUtils {
     }
   }
 
-  /**
-    * Parses the task id into job arguments
-    *
-    * @param taskId
-    * @return
-    */
-  def getJobArgumentsForTaskId(taskId: String): String = {
-    require(taskId != null, "taskId cannot be null")
-    try {
-      val TaskUtils.taskIdPattern(_, _, _, jobArguments) = taskId
-      jobArguments
-    } catch {
-      case t: Exception =>
-        log.warning("Unable to parse idStr: '%s' due to a corrupted string or version error. " +
-          "Warning, dependents will not be triggered!")
-        ""
-    }
-  }
-
   def parseTaskId(id: String): (String, Long, Int, String) = {
     val taskIdPattern(due, attempt, jobName, jobArguments) = id
     (jobName, due.toLong, attempt.toInt, jobArguments)
+  }
+
+  // Turn a string into a murmur3 hash; keep it a string
+  // murmur makes more sense here vs md5 since this code will be called often and
+  // we are just looking for a low collision rate and not security
+  def murmurHash(stringToHash: String) = stringToHash match {
+    case "" => stringToHash
+    case _  => MurmurHash3.stringHash(stringToHash).toString
   }
 }
