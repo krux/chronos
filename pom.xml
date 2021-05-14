@@ -17,7 +17,7 @@
 
     <!-- language versions -->
     <java.abi>1.8</java.abi>
-    <scala.version>2.11.8</scala.version>
+    <scala.version>2.13.5</scala.version>
     <scala.abi>2.11.8</scala.abi>
 
     <!-- runtime deps versions -->
